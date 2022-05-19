@@ -26,6 +26,7 @@ class App extends Component {
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = SimpleStorageContract.networks[networkId];
+      console.log(deployedNetwork);
       const instance = new web3.eth.Contract(
         SimpleStorageContract.abi,
         deployedNetwork && deployedNetwork.address,
@@ -43,18 +44,18 @@ class App extends Component {
     }
   };
 
-  // runExample = async () => {
-  //   const { accounts, contract } = this.state;
+  runExample = async () => {
+    const { accounts, contract } = this.state;
+    console.log(accounts, contract);
+    // Stores a given value, 5 by default.
 
-  //   // Stores a given value, 5 by default.
-  //   await contract.methods.set(0).send({ from: accounts[0] });
+    // Get the value from the contract to prove it worked.
+    // const response = await contract.methods.get();
 
-  //   // Get the value from the contract to prove it worked.
-  //   const response = await contract.methods.get().call();
-
-  //   // Update state with the result.
-  //   this.setState({ storageValue: response });
-  // };
+    // Update state with the result.
+    // this.setState({ storageValue: response });
+    // console.log(this.storageValue);
+  };
 
 
   captureFile(event) {
@@ -69,14 +70,20 @@ class App extends Component {
     }
   }
 
-  onSubmit(event) {
+  async onSubmit(event) {
+    const { accounts, contract } = this.state;
     event.preventDefault()
     console.log('on submit...')
+    console.log(contract.address)
 
-    ipfs.add(this.state.buffer).then((res) => {
+    ipfs.add(this.state.buffer).then(async (res) => {
+      await contract.methods.set(res).call();
       this.setState({ ipfsHash: res })
       console.log(this.state.ipfsHash)
     })
+
+    const a = await contract.methods.get().call();
+    console.log(a);
   }
 
   render() {
@@ -85,14 +92,15 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <h1>IPFS File Upload!</h1>
+        <h1>Post Mortem Report</h1>
         <p>The Document is stored on IPFS and The Ethereum Blockchain!</p>
         <img src="" alt="" />
-        <h2>Upload Image</h2>
+        <h2>Upload File</h2>
         <form onSubmit={this.onSubmit}>
           <input type="file" onChange={this.captureFile}></input>
           <input type="submit"></input>
         </form>
+
       </div>
     );
   }
